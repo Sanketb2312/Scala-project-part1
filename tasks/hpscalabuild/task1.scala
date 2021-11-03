@@ -1,7 +1,7 @@
-//import scala.collection.mutable.MutableList
+import scala.collection.mutable.MutableList
 
 object Task1 {
-   /* def createList(): MutableList[Int] = {
+    def createList(): MutableList[Int] = {
         val list = MutableList[Int]()
         for ( i <- 0 to 50) {
             list += i
@@ -41,7 +41,7 @@ object Task1 {
 
         fibIter(n, 1)
     }
-*/
+
     // BigInt has no max size and can use as much memory as you have available
     // Int uses 32 bits
 
