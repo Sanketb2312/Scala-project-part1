@@ -1,5 +1,10 @@
 *.class
 *.log
+*.bsp
+*.idea
+.DS_Store
+*.conf
+*.properties
 
 #
 # JARs aren't checked in, they are fetched by sbt
@@ -57,3 +62,4 @@ jitwatch.out
 .metals
 .bloop
 project/**/metals.sbt
+target/
