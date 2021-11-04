@@ -19,7 +19,10 @@ class TransactionQueue {
   def isEmpty: Boolean = this.synchronized { transactions.isEmpty }
 
   // Add new element to the back of the queue
-  def push(t: Transaction): Unit = this.synchronized { transactions += t }
+  def push(t: Transaction): Unit = this.synchronized { 
+    transactions += t
+    // this.notifyAll()  
+  }
 
   // Return the first element from the queue without removing it
   def peek: Transaction = this.synchronized { transactions.head }
@@ -40,37 +43,47 @@ class Transaction(
   var attempt = 0
 
   override def run: Unit = {
-
-    this.attempt.synchronized {
-      attempt += 1
-      if (attempt > allowedAttemps) {
-        return
+    def doTransaction: Either[Unit, String] = {
+      // TODO - project task 3
+      // Extend this method to satisfy requirements.
+      from.withdraw(this.amount) match {
+        case Left(_) => {
+          to.deposit(this.amount) match {
+            case Left(_) => Left(())
+            case Right(error) => {
+              from.deposit(this.amount)
+              Right("Deposit to account failed with error: " + error)
+            }
+          }
+        }
+        case Right(error) => {  
+          Right("Withdrawal from account failed with error: " + error)
+        }
       }
     }
 
     this.synchronized {
-      def doTransaction = {
-        // TODO - project task 3
-        // Extend this method to satisfy requirements.
-        from withdraw amount
-        to deposit amount
-      }
-
-      // TODO - project task 3
-      // make the code below thread safe
       if (status == TransactionStatus.PENDING) {
+        val transactionResult: Either[Unit, String] = doTransaction
+        Thread.sleep(50)
 
-        if (attempt == allowedAttemps) {
-          status = TransactionStatus.FAILED
-          return
+        transactionResult match {
+          case Left(_) => {
+            status = TransactionStatus.SUCCESS
+            this.processedTransactions.push(this)
+          } case Right(error) => {
+            attempt += 1
+            if (attempt >= allowedAttemps) {
+              status = TransactionStatus.FAILED
+              this.processedTransactions.push(this)
+            } else {
+              this.transactionsQueue.push(this)
+            }
+          }
         }
-
-        doTransaction
-        Thread.sleep(50) // you might want this to make more room for
-        // new transactions to be added to the queue
-        status = TransactionStatus.SUCCESS // HVIS ALT GIKK BRA
-
       }
     }
   }
 }
+
+

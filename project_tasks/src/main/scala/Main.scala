@@ -1,6 +1,5 @@
 
 object Main extends App {
-
     def thread(body: => Unit): Thread = {
         val t = new Thread {
             override def run() = body
@@ -8,5 +7,4 @@ object Main extends App {
         t.start
         t
     }
-  
 }

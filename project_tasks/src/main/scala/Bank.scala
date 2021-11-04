@@ -2,13 +2,13 @@ class Bank(val allowedAttempts: Integer = 3) {
 
   private val transactionsQueue: TransactionQueue = new TransactionQueue()
   private val processedTransactions: TransactionQueue = new TransactionQueue()
+  private var isProcessingTransactions: Boolean = false
 
   def addTransactionToQueue(
       from: Account,
       to: Account,
       amount: Double
   ): Unit = {
-
     val transaction = new Transaction(
       this.transactionsQueue,
       this.processedTransactions,
@@ -19,33 +19,27 @@ class Bank(val allowedAttempts: Integer = 3) {
     )
 
     this.transactionsQueue.push(transaction)
-    processedTransactions()
+
+    if (!isProcessingTransactions) {
+      this.isProcessingTransactions = true
+      val thread = new Thread(() => processTransactions)
+      thread.start  
+    }
   }
-  // TODO
   // project task 2
   // create a new transaction object and put it in the queue
   // spawn a thread that calls processTransactions
 
   private def processTransactions: Unit = {
-
-    val trans = transactionsQueue.pop()
-
-    val thread = new Thread(new Runnable {
-      trans.run()
-    })
-
-    if (trans.status == PENDING) {
-      transctionQueue.push(trans)
-    } else {
-      processedTransactions.push(trans)
+    if (!transactionsQueue.isEmpty) {
+      val trans = transactionsQueue.pop
+      val thread = new Thread(trans)
+      thread.start()
     }
 
-    if (!this.transactionsQueue.isEmpty()) {
-      processTransactions()
-    }
+    processTransactions
   }
-  // TOO
-  // project task 2
+
   // Function that pops a transaction from the queue
   // and spawns a thread to execute the transaction.
   // Finally do the appropriate thing, depending on whether
@@ -58,5 +52,4 @@ class Bank(val allowedAttempts: Integer = 3) {
   def getProcessedTransactionsAsList: List[Transaction] = {
     processedTransactions.iterator.toList
   }
-
 }

@@ -68,8 +68,6 @@ class AccountTests extends FunSuite {
     fourth.join()
     assert(acc.getBalanceAmount == 54500)
   }
-
-
 }
 
 class AccountTransferTests extends FunSuite {
